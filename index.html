@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VayuSaathi — GenAI Winter Smog &amp; Urban Air Quality Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              900: '#064e3b'
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .chat-scroll::-webkit-scrollbar { width: 6px; }
+    .chat-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 9999px; }
+    .toggle-checkbox:checked + .toggle-label { background-color: #059669; }
+    .toggle-checkbox:checked + .toggle-label .toggle-dot { transform: translateX(1.25rem); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-emerald-100 selection:text-emerald-900">
+  <!-- Toast notification -->
+  <div id="toast" class="fixed bottom-4 right-4 z-50 hidden items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white shadow-lg transition-all">
+    <span id="toast-msg">Copied to clipboard</span>
+  </div>
+
+  <!-- Top Header -->
+  <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-md">
+    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white shadow-sm">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-bold tracking-tight text-slate-900 sm:text-xl">VayuSaathi</h1>
+            <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">GenAI Air Assistant</span>
+          </div>
+          <p class="text-xs text-slate-500">Winter smog navigation, indoor air hacks &amp; impact intelligence</p>
+        </div>
+      </div>
+
+      <!-- Live AQI Pill -->
+      <div class="flex items-center gap-2.5">
+        <div id="header-aqi-badge" class="flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-3 py-1.5">
+          <span id="header-aqi-dot" class="h-2.5 w-2.5 rounded-full bg-orange-500"></span>
+          <div class="text-xs">
+            <span class="font-semibold text-slate-700" id="header-station-name">Kolkata Overall</span>
+            <span class="mx-1 text-slate-400">|</span>
+            <span class="font-bold text-orange-700" id="header-aqi-val">AQI 270 (Poor)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <nav class="flex gap-1 overflow-x-auto pb-0" aria-label="Primary Tabs">
+        <button data-tab="assistant" class="tab-btn whitespace-nowrap border-b-2 border-emerald-600 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition-colors">
+          AI Assistant &amp; Routine
+        </button>
+        <button data-tab="iaq" class="tab-btn whitespace-nowrap border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors">
+          Indoor Air Quality Lab
+        </button>
+        <button data-tab="community" class="tab-btn whitespace-nowrap border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors">
+          Sustainable Swaps &amp; Community
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-4 py-5 sm:px-6">
+    <!-- Location & Lifestyle Profile Bar -->
+    <section class="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700">Your Location &amp; Lifestyle Context</h2>
+          <p class="text-xs text-slate-500">Recommendations and impact numbers adapt in real time to your station and home setup.</p>
+        </div>
+        <span class="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">WBPCB Readings · Nov 17, 2026</span>
+      </div>
+
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <!-- Station -->
+        <div>
+          <label for="station-select" class="mb-1 block text-xs font-semibold text-slate-600">Monitoring Station / Area</label>
+          <select id="station-select" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-800 focus:border-emerald-500 focus:bg-white focus:outline-none">
+            <option value="kolkata">Kolkata Overall (AQI 270)</option>
+            <option value="chakraberia">Chakraberia (AQI 282)</option>
+            <option value="bhowanipore">Bhowanipore (AQI 276)</option>
+            <option value="ballygunge">Ballygunge (AQI 272)</option>
+            <option value="bidhannagar">Bidhannagar / Salt Lake (AQI 264)</option>
+            <option value="jadavpur">Jadavpur University (AQI 218)</option>
+            <option value="fort_william">Fort William (AQI 177)</option>
+            <option value="rabindra_sarobar">Rabindra Sarobar (AQI 125)</option>
+            <option value="custom">Custom AQI Scenario</option>
+          </select>
+        </div>
+
+        <!-- Custom AQI Slider -->
+        <div>
+          <div class="mb-1 flex items-center justify-between">
+            <label for="aqi-slider" class="text-xs font-semibold text-slate-600">Outdoor AQI Level</label>
+            <span id="slider-aqi-readout" class="text-xs font-bold text-orange-600">270</span>
+          </div>
+          <input id="aqi-slider" type="range" min="40" max="500" value="270" class="mt-2 h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-emerald-600" />
+          <div class="mt-1 flex justify-between text-[10px] text-slate-400">
+            <span>Good (50)</span>
+            <span>Poor (250)</span>
+            <span>Severe (450+)</span>
+          </div>
+        </div>
+
+        <!-- Household -->
+        <div>
+          <label for="household-select" class="mb-1 block text-xs font-semibold text-slate-600">Household Profile</label>
+          <select id="household-select" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-800 focus:border-emerald-500 focus:bg-white focus:outline-none">
+            <option value="family_kids_seniors">Family with Kids &amp; Seniors</option>
+            <option value="asthma_sensitive">Asthma / Respiratory Sensitive</option>
+            <option value="general_adults">General Urban Adults</option>
+          </select>
+        </div>
+
+        <!-- Commute -->
+        <div>
+          <label for="commute-select" class="mb-1 block text-xs font-semibold text-slate-600">Primary Daily Commute</label>
+          <select id="commute-select" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-800 focus:border-emerald-500 focus:bg-white focus:outline-none">
+            <option value="car">Private Petrol/Diesel Car</option>
+            <option value="two_wheeler">Two-Wheeler / Scooter</option>
+            <option value="metro">Kolkata Metro + Walk</option>
+            <option value="bus">Public Bus / Electric Bus</option>
+          </select>
+        </div>
+
+        <!-- Cooking -->
+        <div>
+          <label for="cooking-select" class="mb-1 block text-xs font-semibold text-slate-600">Kitchen Cooking Setup</label>
+          <select id="cooking-select" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-800 focus:border-emerald-500 focus:bg-white focus:outline-none">
+            <option value="lpg">LPG Gas Stove</option>
+            <option value="hybrid">Hybrid (LPG + Induction)</option>
+            <option value="induction">Electric Induction Only</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- KPI Summary Strip -->
+      <div class="mt-4 grid grid-cols-2 gap-3 border-t border-slate-100 pt-4 lg:grid-cols-4">
+        <div class="rounded-xl bg-slate-50 p-3">
+          <div class="text-xs font-medium text-slate-500">Est. Outdoor PM₂.₅</div>
+          <div class="mt-1 flex items-baseline gap-1.5">
+            <span id="kpi-outdoor-pm" class="text-xl font-bold text-slate-900">111</span>
+            <span class="text-xs text-slate-500">µg/m³</span>
+          </div>
+          <div id="kpi-outdoor-vs-who" class="mt-0.5 text-[11px] font-medium text-orange-600">7.4× WHO 24h limit (15 µg/m³)</div>
+        </div>
+
+        <div class="rounded-xl bg-emerald-50/70 p-3">
+          <div class="text-xs font-medium text-emerald-800">Est. Indoor PM₂.₅</div>
+          <div class="mt-1 flex items-baseline gap-1.5">
+            <span id="kpi-indoor-pm" class="text-xl font-bold text-emerald-900">68</span>
+            <span class="text-xs text-emerald-700">µg/m³</span>
+          </div>
+          <div id="kpi-indoor-status" class="mt-0.5 text-[11px] font-medium text-emerald-700">Toggle IAQ hacks to cut further</div>
+        </div>
+
+        <div class="rounded-xl bg-sky-50/70 p-3">
+          <div class="text-xs font-medium text-sky-800">Daily Exposure Reduction</div>
+          <div class="mt-1 flex items-baseline gap-1.5">
+            <span id="kpi-exposure-cut" class="text-xl font-bold text-sky-900">39%</span>
+            <span class="text-xs text-sky-700">vs. unmitigated</span>
+          </div>
+          <div class="mt-0.5 text-[11px] text-sky-700">From routine + indoor controls</div>
+        </div>
+
+        <div class="rounded-xl bg-amber-50/70 p-3">
+          <div class="text-xs font-medium text-amber-800">Commute CO₂e Avoidable</div>
+          <div class="mt-1 flex items-baseline gap-1.5">
+            <span id="kpi-co2-saved" class="text-xl font-bold text-amber-900">1.41</span>
+            <span class="text-xs text-amber-700">kg/day</span>
+          </div>
+          <div id="kpi-co2-note" class="mt-0.5 text-[11px] text-amber-700">By shifting 15 km car trip to Metro</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 1: AI ASSISTANT & DAILY ROUTINE -->
+    <section id="tab-assistant" class="tab-panel grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <!-- Left: GenAI Conversational Assistant -->
+      <div class="flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm lg:col-span-7">
+        <div class="flex items-center justify-between border-b border-slate-100 px-5 py-3.5">
+          <div class="flex items-center gap-2.5">
+            <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-600 text-xs font-bold text-white">AI</span>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Ask VayuSaathi</h3>
+              <p class="text-[11px] text-slate-500">Tailored to your station, family sensitivity, commute &amp; kitchen</p>
+            </div>
+          </div>
+          <button id="clear-chat-btn" class="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50">Reset Chat</button>
+        </div>
+
+        <!-- Prompt Chips -->
+        <div class="flex flex-wrap gap-2 border-b border-slate-100 bg-slate-50/60 px-5 py-3">
+          <button class="prompt-chip rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-medium text-emerald-800 hover:bg-emerald-50" data-prompt="Plan my safe low-emission morning and evening routine for today's AQI">
+            Plan today's safe routine
+          </button>
+          <button class="prompt-chip rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-medium text-emerald-800 hover:bg-emerald-50" data-prompt="How do I build a low-cost DIY Corsi-Rosenthal air purifier for our bedroom?">
+            DIY Corsi-Rosenthal purifier
+          </button>
+          <button class="prompt-chip rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-medium text-emerald-800 hover:bg-emerald-50" data-prompt="What is the direct health and emission impact of switching from LPG to induction cooking?">
+            LPG vs Induction impact
+          </button>
+          <button class="prompt-chip rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-medium text-emerald-800 hover:bg-emerald-50" data-prompt="Compare my commute options in Kolkata and explain how much CO2 and PM exposure I save">
+            Compare Kolkata commute impact
+          </button>
+        </div>
+
+        <!-- Chat Messages -->
+        <div id="chat-messages" class="chat-scroll flex-1 space-y-4 overflow-y-auto p-5" style="max-height: 460px; min-height: 320px;"></div>
+
+        <!-- Chat Input -->
+        <form id="chat-form" class="border-t border-slate-100 p-4">
+          <div class="flex gap-2">
+            <input id="chat-input" type="text" placeholder="Ask about safe walk times, N95 fit, indoor plants vs HEPA, or neighborhood alerts..." class="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none" />
+            <button type="submit" class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none">
+              Ask
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Right: Tailored Low-Emission Daily Routine -->
+      <div class="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-5">
+        <div class="mb-4 flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Low-Emission Daily Routine</h3>
+            <p class="text-xs text-slate-500">Check off actions to track your family's smog protection score</p>
+          </div>
+          <div class="text-right">
+            <span id="routine-score-badge" class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-800">2/5 Done</span>
+          </div>
+        </div>
+
+        <div id="routine-list" class="space-y-3"></div>
+
+        <!-- Explainable Impact Note -->
+        <div class="mt-4 rounded-xl border border-sky-100 bg-sky-50/70 p-3.5">
+          <div class="text-xs font-bold text-sky-900">Why Timing Matters in Kolkata Winters</div>
+          <p class="mt-1 text-xs leading-relaxed text-sky-800">
+            Winter temperature inversions and low wind speeds trap morning PM₂.₅ near ground level, while night-time truck movement drives evening NO₂ peaks up to midnight (<a href="https://www.cseindia.org/Tracking-ovrall-and-winter-air-pollution-in-WB.pdf" target="_blank" rel="noopener" class="underline font-medium">CSE India</a>). Shifting outdoor errands to 1–4 PM and sealing windows at dawn cuts peak inhalation exposure.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: INDOOR AIR QUALITY (IAQ) LAB -->
+    <section id="tab-iaq" class="tab-panel hidden space-y-6">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <!-- Left: Toggleable Indoor Hacks -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-7">
+          <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Indoor Air Quality Hacks &amp; DIY Controls</h3>
+              <p class="text-xs text-slate-500">Toggle interventions active in your home to model real-time indoor PM₂.₅ reduction</p>
+            </div>
+            <button id="enable-all-iaq" class="rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100">Activate Recommended Bundle</button>
+          </div>
+
+          <div id="iaq-hacks-list" class="space-y-3"></div>
+        </div>
+
+        <!-- Right: Indoor vs Outdoor Exposure Chart & DIY Guide -->
+        <div class="space-y-6 lg:col-span-5">
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 class="text-base font-bold text-slate-900">Indoor vs. Outdoor PM₂.₅ (µg/m³)</h3>
+            <p class="mb-3 text-xs text-slate-500">Compared against WHO 24h (15 µg/m³) &amp; India NAAQS 24h (60 µg/m³) limits</p>
+            <div class="relative h-64">
+              <canvas id="iaq-chart"></canvas>
+            </div>
+          </div>
+
+          <!-- DIY Corsi-Rosenthal Box Card -->
+          <div class="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-5 shadow-sm">
+            <div class="flex items-center justify-between">
+              <span class="rounded-full bg-emerald-600 px-2.5 py-0.5 text-[11px] font-bold text-white">DIY Blueprint</span>
+              <span class="text-xs font-semibold text-emerald-800">~1/10th Commercial HEPA Cost</span>
+            </div>
+            <h4 class="mt-2 text-base font-bold text-slate-900">Corsi-Rosenthal Box (MERV-13)</h4>
+            <p class="mt-1 text-xs leading-relaxed text-slate-700">
+              Combine 4–5 MERV-13 pleated HVAC filters into a cube with a standard box fan on top and seal seams with duct tape.
+            </p>
+            <ul class="mt-3 space-y-1.5 text-xs text-slate-700">
+              <li class="flex items-start gap-2">
+                <span class="mt-0.5 font-bold text-emerald-700">•</span>
+                <span><strong>70%+ PM₂.₅ mass drop</strong> (56–91% fine particle reduction in classroom tests; up to 92% in small apartments)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="mt-0.5 font-bold text-emerald-700">•</span>
+                <span><strong>600–850 ft³/min CADR</strong> on 5-filter MERV-13 design; MERV-13 cleans ~71% better than MERV-8</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="mt-0.5 font-bold text-emerald-700">•</span>
+                <span><strong>Tip:</strong> Run on high speed near occupants during morning/evening inversion peaks</span>
+              </li>
+            </ul>
+            <div class="mt-3 text-[11px] text-emerald-800">
+              Sources: <a href="https://chemrxiv.org/doi/10.26434/chemrxiv-2022-77x33" target="_blank" rel="noopener" class="underline">ChemRxiv 2022</a> · <a href="https://extension.psu.edu/box-fan-filters-provide-cleaner-indoor-air-during-smoke-events" target="_blank" rel="noopener" class="underline">Penn State Extension</a> · <a href="https://en.wikipedia.org/wiki/Corsi%E2%80%93Rosenthal_Box" target="_blank" rel="noopener" class="underline">UC Davis CADR Study</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: SUSTAINABLE SWAPS & COMMUNITY -->
+    <section id="tab-community" class="tab-panel hidden space-y-6">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <!-- Left: Impact Comparison Chart + Swaps -->
+        <div class="space-y-6 lg:col-span-7">
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 class="text-base font-bold text-slate-900">Direct Impact of Sustainable Lifestyle Swaps</h3>
+                <p class="text-xs text-slate-500">Quantified weekly CO₂e &amp; pollutant reductions based on your active profile</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <label for="commute-km-input" class="text-xs font-medium text-slate-600">Daily trip (km):</label>
+                <input id="commute-km-input" type="number" min="2" max="80" value="15" class="w-16 rounded-lg border border-slate-200 px-2 py-1 text-center text-xs font-bold text-slate-800" />
+              </div>
+            </div>
+            <div class="relative h-64">
+              <canvas id="impact-chart"></canvas>
+            </div>
+          </div>
+
+          <!-- Swap Cards -->
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div class="text-xs font-bold uppercase tracking-wide text-emerald-700">Mobility Swap</div>
+              <h4 class="mt-1 text-sm font-bold text-slate-900">Private Car → Kolkata Metro / Bus</h4>
+              <p class="mt-1.5 text-xs leading-relaxed text-slate-600">
+                Car users in Kolkata generate <strong>6.5× higher per-capita carbon emissions</strong> than public transit riders (<a href="https://www.cseindia.org/media-briefing-on-urban-mobility-and-climate-change-kolkata-february-17-2017-6801" target="_blank" rel="noopener" class="underline">CSE India</a>). Shifting a 15 km daily round trip from an average Indian car (111 g CO₂/km) saves <strong>~1.41 kg CO₂/day</strong> (~42 kg/month).
+              </p>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div class="text-xs font-bold uppercase tracking-wide text-emerald-700">Kitchen Swap</div>
+              <h4 class="mt-1 text-sm font-bold text-slate-900">LPG Gas → Electric Induction</h4>
+              <p class="mt-1.5 text-xs leading-relaxed text-slate-600">
+                Replacing gas stoves with induction cuts <strong>personal NO₂ exposure by ~50%</strong> (-9.9 ppb) and <strong>personal PM₂.₅ by 44%</strong> (-11.4 µg/m³) (<a href="https://www.medrxiv.org/content/10.1101/2023.04.10.23288249v1.full" target="_blank" rel="noopener" class="underline">medRxiv</a>), while eliminating 100% of direct stove CO₂ and 94.4% of CO emissions (<a href="https://pubmed.ncbi.nlm.nih.gov/39643227/" target="_blank" rel="noopener" class="underline">PubMed</a>).
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Community & RWA Action Generator -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-5">
+          <h3 class="text-base font-bold text-slate-900">Community &amp; RWA Smog Action</h3>
+          <p class="mt-1 text-xs text-slate-500">Generate a localized alert for your housing society, school parent group, or ward WhatsApp channel.</p>
+
+          <div class="mt-4 space-y-3">
+            <div>
+              <label for="alert-type-select" class="mb-1 block text-xs font-semibold text-slate-600">Action Campaign Type</label>
+              <select id="alert-type-select" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-800">
+                <option value="leaf_burning">Stop Open Leaf &amp; Waste Burning</option>
+                <option value="school_carpool">School &amp; Office Carpool / Metro Shift</option>
+                <option value="senior_check">Winter Smog Senior &amp; Kids Advisory</option>
+              </select>
+            </div>
+
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+              <div class="mb-1.5 flex items-center justify-between">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Ready-to-Share Message</span>
+                <button id="copy-alert-btn" class="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-700">Copy Message</button>
+              </div>
+              <pre id="community-alert-preview" class="whitespace-pre-wrap font-sans text-xs leading-relaxed text-slate-700"></pre>
+            </div>
+
+            <div class="rounded-xl border border-amber-100 bg-amber-50/70 p-3.5">
+              <div class="text-xs font-bold text-amber-900">Local Community Levers</div>
+              <ul class="mt-1.5 space-y-1 text-xs text-amber-800">
+                <li>• <strong>Compost dry winter leaves</strong> instead of open burning — a key driver of Kolkata's winter PM₂.₅ spikes.</li>
+                <li>• <strong>Advocate for roadside water sprinkling</strong> and dust-free construction covering in your ward.</li>
+                <li>• <strong>Shared DIY C-R Boxes</strong> for neighborhood classrooms &amp; senior citizen rooms.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Grounded Sources Footer -->
+    <footer class="mt-8 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-xs text-slate-500">
+      <div class="font-semibold text-slate-700">Verified Data &amp; Scientific Sources</div>
+      <div class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
+        <a href="https://theprint.in/india/kolkatas-air-quality-remains-poor-on-tuesday/3100954/" target="_blank" rel="noopener" class="hover:text-emerald-700 underline">WBPCB Kolkata AQI (Nov 17, 2026)</a>
+        <a href="https://www.c40knowledgehub.org/s/article/WHO-Air-Quality-Guidelines?language=en_US" target="_blank" rel="noopener" class="hover:text-emerald-700 underline">WHO 2021 Air Quality Guidelines</a>
+        <a href="https://greenglobe25.in/how-aqi-is-calculated-in-india/" target="_blank" rel="noopener" class="hover:text-emerald-700 underline">CPCB India NAQI Breakpoints</a>
+        <a href="https://chemrxiv.org/doi/10.26434/chemrxiv-2022-77x33" target="_blank" rel="noopener" class="hover:text-emerald-700 underline">ChemRxiv C-R Box Study</a>
+        <a href="https://extension.psu.edu/box-fan-filters-provide-cleaner-indoor-air-during-smoke-events" target="_blank" rel="noopener" class="hover:text-emerald-700 underline">Penn State MERV-13 Study</a>
+        <a href="https://www.medrxiv.org/content/10.1101/2023.04.10.23288249v1.full" target="_blank" rel="noopener" class="hover:text-emerald-700 underline">medRxiv LPG vs Induction Study</a>
+        <a href="https://pubmed.ncbi.nlm.nih.gov/39643227/" target="_blank" rel="noopener" class="hover:text-emerald-700 underline">PubMed Induction Emissions</a>
+        <a href="https://www.cseindia.org/media-briefing-on-urban-mobility-and-climate-change-kolkata-february-17-2017-6801" target="_blank" rel="noopener" class="hover:text-emerald-700 underline">CSE Kolkata Mobility</a>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // Grounded Station Data (WBPCB Nov 17, 2026)
+    const STATIONS = {
+      kolkata: { name: 'Kolkata Overall', aqi: 270 },
+      chakraberia: { name: 'Chakraberia', aqi: 282 },
+      bhowanipore: { name: 'Bhowanipore', aqi: 276 },
+      ballygunge: { name: 'Ballygunge', aqi: 272 },
+      bidhannagar: { name: 'Bidhannagar / Salt Lake', aqi: 264 },
+      jadavpur: { name: 'Jadavpur University', aqi: 218 },
+      fort_william: { name: 'Fort William', aqi: 177 },
+      rabindra_sarobar: { name: 'Rabindra Sarobar', aqi: 125 },
+      custom: { name: 'Custom Location', aqi: 270 }
+    };
+
+    const IAQ_HACKS = [
+      {
+        id: 'cr_box',
+        title: 'Run DIY Corsi-Rosenthal Box (MERV-13)',
+        badge: '-72% PM₂.₅',
+        reduction: 0.72,
+        desc: 'Reduces PM₂.₅ mass by >70% and fine particles by 56–91% at ~1/10th the cost of commercial HEPA.',
+        impactNote: 'Cuts indoor smoke & winter smog particles rapidly within 20–30 minutes.'
+      },
+      {
+        id: 'seal_inversion',
+        title: 'Seal Windows During Morning & Night Inversion',
+        badge: '-35% Infiltration',
+        reduction: 0.35,
+        desc: 'Keep windows closed 6–10 AM & after 7 PM; ventilate briefly during 1–4 PM dispersion window.',
+        impactNote: 'Blocks peak ground-level PM₂.₅ and night-time truck NO₂ infiltration.'
+      },
+      {
+        id: 'wet_mop',
+        title: 'Wet Mopping Instead of Dry Sweeping',
+        badge: '-10% Resuspension',
+        reduction: 0.10,
+        desc: 'Dry brooming kicks settled PM₂.₅ and PM₁₀ back into breathing zones for hours.',
+        impactNote: 'Prevents indoor dust resuspension, especially critical for toddlers and seniors.'
+      },
+      {
+        id: 'kitchen_exhaust',
+        title: 'Run Kitchen Exhaust + Cross-Ventilate While Cooking',
+        badge: '-65% Cooking Spike',
+        reduction: 0.0,
+        cookingMitigation: 0.65,
+        desc: 'LPG cooking raises 5-min kitchen NO₂ by 5.0 ppb and personal PM₂.₅ by 20.8 µg/m³.',
+        impactNote: 'Captures combustion NO₂ and ultrafine cooking aerosols at the source.'
+      }
+    ];
+
+    const state = {
+      stationId: 'kolkata',
+      aqi: 270,
+      household: 'family_kids_seniors',
+      commute: 'car',
+      cooking: 'lpg',
+      commuteKm: 15,
+      activeTab: 'assistant',
+      checkedRoutines: new Set(['r_window', 'r_mop']),
+      activeIaqHacks: new Set(['seal_inversion', 'wet_mop']),
+      chatHistory: []
+    };
+
+    try {
+      const saved = localStorage.getItem('vayusaathi_state_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.stationId && STATIONS[parsed.stationId]) state.stationId = parsed.stationId;
+        if (typeof parsed.aqi === 'number') state.aqi = parsed.aqi;
+        if (parsed.household) state.household = parsed.household;
+        if (parsed.commute) state.commute = parsed.commute;
+        if (parsed.cooking) state.cooking = parsed.cooking;
+        if (typeof parsed.commuteKm === 'number') state.commuteKm = parsed.commuteKm;
+      }
+    } catch (e) {}
+
+    function saveState() {
+      try {
+        localStorage.setItem('vayusaathi_state_v1', JSON.stringify({
+          stationId: state.stationId,
+          aqi: state.aqi,
+          household: state.household,
+          commute: state.commute,
+          cooking: state.cooking,
+          commuteKm: state.commuteKm
+        }));
+      } catch (e) {}
+    }
+
+    function getAqiMeta(aqi) {
+      if (aqi <= 50) return { label: 'Good', color: 'emerald', hex: '#059669', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', dot: 'bg-emerald-500' };
+      if (aqi <= 100) return { label: 'Satisfactory', color: 'lime', hex: '#65a30d', bg: 'bg-lime-50', border: 'border-lime-200', text: 'text-lime-700', dot: 'bg-lime-500' };
+      if (aqi <= 200) return { label: 'Moderate', color: 'amber', hex: '#d97706', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', dot: 'bg-amber-500' };
+      if (aqi <= 300) return { label: 'Poor', color: 'orange', hex: '#ea580c', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700', dot: 'bg-orange-500' };
+      if (aqi <= 400) return { label: 'Very Poor', color: 'red', hex: '#dc2626', bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', dot: 'bg-red-600' };
+      return { label: 'Severe', color: 'rose', hex: '#9f1239', bg: 'bg-rose-50', border: 'border-rose-300', text: 'text-rose-800', dot: 'bg-rose-800' };
+    }
+
+    // CPCB piecewise linear estimation of 24h PM2.5 from AQI
+    function estimatePm25FromAqi(aqi) {
+      if (aqi <= 50) return Math.round((aqi / 50) * 30);
+      if (aqi <= 100) return Math.round(30 + ((aqi - 50) / 50) * 30);
+      if (aqi <= 200) return Math.round(60 + ((aqi - 100) / 100) * 30);
+      if (aqi <= 300) return Math.round(90 + ((aqi - 200) / 100) * 30);
+      if (aqi <= 400) return Math.round(120 + ((aqi - 300) / 100) * 130);
+      return Math.round(250 + ((aqi - 400) / 100) * 100);
+    }
+
+    function computeMetrics() {
+      const outdoorPm = estimatePm25FromAqi(state.aqi);
+      const sealed = state.activeIaqHacks.has('seal_inversion');
+      let indoorBase = outdoorPm * (sealed ? 0.42 : 0.65);
+
+      let cookingSpike = 0;
+      if (state.cooking === 'lpg') cookingSpike = 11.4;
+      else if (state.cooking === 'hybrid') cookingSpike = 5.7;
+      if (state.activeIaqHacks.has('kitchen_exhaust')) cookingSpike *= 0.35;
+
+      let indoorTotal = indoorBase + cookingSpike;
+      if (state.activeIaqHacks.has('cr_box')) indoorTotal *= (1 - 0.72);
+      if (state.activeIaqHacks.has('wet_mop')) indoorTotal *= (1 - 0.10);
+
+      const indoorPm = Math.max(4, Math.round(indoorTotal));
+      const exposureCut = Math.max(0, Math.round(((outdoorPm - indoorPm) / Math.max(1, outdoorPm)) * 100));
+
+      const carDailyCo2 = (state.commuteKm * 111) / 1000; // kg CO2/day
+      const metroDailyCo2 = carDailyCo2 / 6.5;
+      const co2Avoidable = Math.max(0, carDailyCo2 - metroDailyCo2);
+
+      return { outdoorPm, indoorPm, exposureCut, carDailyCo2, metroDailyCo2, co2Avoidable };
+    }
+
+    function buildRoutineItems() {
+      const highRisk = state.aqi >= 201 || state.household !== 'general_adults';
+      const stationName = STATIONS[state.stationId]?.name || 'your area';
+      return [
+        {
+          id: 'r_window',
+          time: '6:30 – 10:00 AM',
+          title: highRisk ? 'Skip outdoor morning walk; keep windows sealed' : 'Light outdoor walk with well-fitted N95/FFP2 mask',
+          impact: `Avoids ground-level inversion peak at ${stationName} (AQI ${state.aqi}).`
+        },
+        {
+          id: 'r_commute',
+          time: '8:30 – 10:30 AM',
+          title: state.commute === 'car' ? 'Switch commute to Kolkata Metro or carpool' : 'Wear N95 mask during last-mile walk to transit',
+          impact: state.commute === 'car' ? 'Cuts per-capita commute carbon by ~6.5× and reduces road PM.' : 'Filters >95% of fine PM₂.₅ during roadside exposure.'
+        },
+        {
+          id: 'r_vent',
+          time: '1:00 – 4:00 PM',
+          title: 'Afternoon Dispersion Window: Cross-ventilate for 20 mins',
+          impact: 'Refreshes indoor CO₂ when atmospheric mixing height is highest.'
+        },
+        {
+          id: 'r_mop',
+          time: '5:00 – 7:00 PM',
+          title: state.cooking === 'lpg' ? 'Cook with exhaust fan on & prioritize induction' : 'Wet-mop floors & start DIY Corsi-Rosenthal Box',
+          impact: state.cooking === 'lpg' ? 'Cuts kitchen NO₂ (+50% on LPG) and indoor PM₂.₅ spikes.' : 'Maintains indoor PM₂.₅ up to 72% lower overnight.'
+        },
+        {
+          id: 'r_night',
+          time: '8:00 PM – Midnight',
+          title: 'Close roadside vents & run bedroom filtration',
+          impact: 'Blocks evening NO₂ surge from night-time freight & traffic.'
+        }
+      ];
+    }
+
+    function generateAiResponse(userPrompt) {
+      const q = userPrompt.toLowerCase();
+      const stationName = STATIONS[state.stationId]?.name || 'your area';
+      const meta = getAqiMeta(state.aqi);
+      const m = computeMetrics();
+      const hhLabel = state.household === 'asthma_sensitive' ? 'asthma/respiratory-sensitive household'
+        : state.household === 'family_kids_seniors' ? 'family with kids & seniors' : 'general adult household';
+
+      if (q.includes('corsi') || q.includes('diy') || q.includes('purifier')) {
+        return {
+          title: 'DIY Corsi-Rosenthal Box Plan',
+          answer: `At ${stationName} (AQI ${state.aqi}, ${meta.label}), outdoor PM₂.₅ is ~${m.outdoorPm} µg/m³. Building a 5-filter MERV-13 Corsi-Rosenthal Box with a standard box fan delivers 600–850 ft³/min CADR at roughly 1/10th the cost of commercial HEPA purifiers.`,
+          impact: `Verified Impact: Reduces indoor PM₂.₅ mass by >70% (bringing your estimated indoor level down to ~${Math.max(6, Math.round(m.indoorPm * 0.35))} µg/m³) and cuts fine particles by 56–91%.`,
+          actionTab: 'iaq',
+          actionLabel: 'Open IAQ Lab to test C-R Box'
+        };
+      }
+
+      if (q.includes('lpg') || q.includes('induction') || q.includes('cook')) {
+        return {
+          title: 'Kitchen Fuel & Indoor Air Impact',
+          answer: `For a ${hhLabel}, shifting even high-boil meals from LPG to an induction cooktop dramatically lowers indoor combustion pollution during sealed winter days.`,
+          impact: `Verified Impact: LPG cooking increases 48-hr personal NO₂ by 50% (+9.9 ppb) and personal PM₂.₅ by 44% (+11.4 µg/m³). Induction eliminates 100% of direct CO₂, 94.4% of CO, and 26.8% of cooking PM₂.₅.`,
+          actionTab: 'iaq',
+          actionLabel: 'Simulate Kitchen Exhaust + Induction'
+        };
+      }
+
+      if (q.includes('commute') || q.includes('metro') || q.includes('car') || q.includes('travel')) {
+        return {
+          title: `Low-Emission Commute for ${stationName}`,
+          answer: `Private cars and taxis make up 48% of Kolkata's peak-hour road traffic. For your ${state.commuteKm} km daily round trip, shifting from a private car to the Kolkata Metro or electric bus cuts both your carbon footprint and roadside exhaust exposure.`,
+          impact: `Verified Impact: Saves ~${m.co2Avoidable.toFixed(2)} kg CO₂/day (~${(m.co2Avoidable * 22).toFixed(1)} kg/working month) — Kolkata car users emit 6.5× more carbon per capita than Metro riders.`,
+          actionTab: 'community',
+          actionLabel: 'View Commute Impact Chart'
+        };
+      }
+
+      if (q.includes('alert') || q.includes('community') || q.includes('burn') || q.includes('rwa')) {
+        return {
+          title: 'Community & Ward Action Plan',
+          answer: `Open burning of dry winter leaves and waste is a major controllable trigger of local PM₂.₅ spikes around ${stationName}. Organizing a society-level composting drive and carpool alert multiplies your household impact.`,
+          impact: `Verified Impact: Ready-to-send WhatsApp advisories for your RWA or school group are available in the Community tab.`,
+          actionTab: 'community',
+          actionLabel: 'Generate RWA Alert'
+        };
+      }
+
+      // Default tailored routine response
+      return {
+        title: `Today's Smog Strategy for ${stationName} (AQI ${state.aqi})`,
+        answer: `With ${stationName} in the ${meta.label} zone (~${m.outdoorPm} µg/m³ PM₂.₅, ${(m.outdoorPm / 15).toFixed(1)}× the WHO 24h limit of 15 µg/m³), your ${hhLabel} should avoid outdoor exertion before 10:30 AM, ventilate briefly between 1–4 PM, and seal windows before evening NO₂ peaks.`,
+        impact: `Your current home setup brings indoor PM₂.₅ to ~${m.indoorPm} µg/m³ (${m.exposureCut}% lower than outdoors). Adding a MERV-13 C-R Box can bring you near or below India's 60 µg/m³ NAAQS safe limit.`,
+        actionTab: 'iaq',
+        actionLabel: 'Optimize Indoor Air in IAQ Lab'
+      };
+    }
+
+    function appendChatMessage(role, contentObj) {
+      const container = document.getElementById('chat-messages');
+      const wrap = document.createElement('div');
+      wrap.className = role === 'user' ? 'flex justify-end' : 'flex justify-start';
+
+      if (role === 'user') {
+        wrap.innerHTML = `<div class="max-w-[85%] rounded-2xl rounded-br-sm bg-emerald-600 px-4 py-2.5 text-sm text-white shadow-sm">${escapeHtml(contentObj)}</div>`;
+      } else {
+        const actionHtml = contentObj.actionTab
+          ? `<button data-jump-tab="${contentObj.actionTab}" class="mt-2.5 inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100">${escapeHtml(contentObj.actionLabel)} →</button>`
+          : '';
+        wrap.innerHTML = `
+          <div class="max-w-[92%] rounded-2xl rounded-bl-sm border border-slate-200 bg-slate-50 p-4 shadow-sm">
+            <div class="text-xs font-bold uppercase tracking-wide text-emerald-700">${escapeHtml(contentObj.title)}</div>
+            <p class="mt-1.5 text-sm leading-relaxed text-slate-800">${escapeHtml(contentObj.answer)}</p>
+            <div class="mt-2.5 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-medium text-emerald-900">
+              ${escapeHtml(contentObj.impact)}
+            </div>
+            ${actionHtml}
+          </div>`;
+      }
+      container.appendChild(wrap);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    let iaqChart = null;
+    let impactChart = null;
+
+    function updateCharts(m) {
+      const iaqCtx = document.getElementById('iaq-chart').getContext('2d');
+      const iaqData = [m.outdoorPm, m.indoorPm, 60, 15];
+      if (iaqChart) {
+        iaqChart.data.datasets[0].data = iaqData;
+        iaqChart.update();
+      } else {
+        iaqChart = new Chart(iaqCtx, {
+          type: 'bar',
+          data: {
+            labels: ['Outdoor Est.', 'Your Indoor Est.', 'India NAAQS (24h)', 'WHO Limit (24h)'],
+            datasets: [{
+              label: 'PM₂.₅ (µg/m³)',
+              data: iaqData,
+              backgroundColor: ['#ea580c', '#059669', '#f59e0b', '#0284c7'],
+              borderRadius: 8
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, title: { display: true, text: 'µg/m³' } }
+            }
+          }
+        });
+      }
+
+      const impCtx = document.getElementById('impact-chart').getContext('2d');
+      const weeklyCar = Number((m.carDailyCo2 * 5).toFixed(2));
+      const weeklyMetro = Number((m.metroDailyCo2 * 5).toFixed(2));
+      const weeklySaved = Number((weeklyCar - weeklyMetro).toFixed(2));
+      if (impactChart) {
+        impactChart.data.datasets[0].data = [weeklyCar, weeklyMetro, weeklySaved];
+        impactChart.update();
+      } else {
+        impactChart = new Chart(impCtx, {
+          type: 'bar',
+          data: {
+            labels: ['Private Car (5-day)', 'Kolkata Metro (5-day)', 'Net CO₂ Saved / Week'],
+            datasets: [{
+              label: 'kg CO₂e',
+              data: [weeklyCar, weeklyMetro, weeklySaved],
+              backgroundColor: ['#ef4444', '#0ea5e9', '#10b981'],
+              borderRadius: 8
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, title: { display: true, text: 'kg CO₂e / week' } }
+            }
+          }
+        });
+      }
+    }
+
+    function renderAll() {
+      const meta = getAqiMeta(state.aqi);
+      const m = computeMetrics();
+      const stationName = state.stationId === 'custom' ? 'Custom Scenario' : STATIONS[state.stationId].name;
+
+      // Header Badge
+      const badge = document.getElementById('header-aqi-badge');
+      badge.className = `flex items-center gap-2 rounded-xl border px-3 py-1.5 ${meta.border} ${meta.bg}`;
+      document.getElementById('header-aqi-dot').className = `h-2.5 w-2.5 rounded-full ${meta.dot}`;
+      document.getElementById('header-station-name').textContent = stationName;
+      const aqiValEl = document.getElementById('header-aqi-val');
+      aqiValEl.textContent = `AQI ${state.aqi} (${meta.label})`;
+      aqiValEl.className = `font-bold ${meta.text}`;
+
+      // Slider readout
+      const sliderReadout = document.getElementById('slider-aqi-readout');
+      sliderReadout.textContent = state.aqi;
+      sliderReadout.className = `text-xs font-bold ${meta.text}`;
+      document.getElementById('aqi-slider').value = state.aqi;
+
+      // KPIs
+      document.getElementById('kpi-outdoor-pm').textContent = m.outdoorPm;
+      document.getElementById('kpi-outdoor-vs-who').textContent = `${(m.outdoorPm / 15).toFixed(1)}× WHO 24h limit (15 µg/m³)`;
+      document.getElementById('kpi-indoor-pm').textContent = m.indoorPm;
+      document.getElementById('kpi-indoor-status').textContent = m.indoorPm <= 15
+        ? 'Meets WHO 24h safe target!'
+        : m.indoorPm <= 60
+          ? 'Below India NAAQS 24h limit (60 µg/m³)'
+          : 'Above 60 µg/m³ — add C-R Box in IAQ Lab';
+      document.getElementById('kpi-exposure-cut').textContent = `${m.exposureCut}%`;
+      document.getElementById('kpi-co2-saved').textContent = m.co2Avoidable.toFixed(2);
+      document.getElementById('kpi-co2-note').textContent = `Shifting ${state.commuteKm} km car trip to Metro`;
+
+      // Routine list
+      const routineItems = buildRoutineItems();
+      const routineEl = document.getElementById('routine-list');
+      routineEl.innerHTML = '';
+      let doneCount = 0;
+      routineItems.forEach((item) => {
+        const checked = state.checkedRoutines.has(item.id);
+        if (checked) doneCount++;
+        const card = document.createElement('label');
+        card.className = `flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-all ${checked ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-200 bg-white hover:bg-slate-50'}`;
+        card.innerHTML = `
+          <input type="checkbox" data-routine-id="${item.id}" ${checked ? 'checked' : ''} class="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+          <div class="flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700">${item.time}</span>
+            </div>
+            <div class="mt-0.5 text-sm font-semibold text-slate-900 ${checked ? 'line-through text-slate-500' : ''}">${item.title}</div>
+            <div class="mt-0.5 text-xs text-slate-600">${item.impact}</div>
+          </div>`;
+        routineEl.appendChild(card);
+      });
+      document.getElementById('routine-score-badge').textContent = `${doneCount}/${routineItems.length} Done`;
+
+      // IAQ Hacks list
+      const iaqEl = document.getElementById('iaq-hacks-list');
+      iaqEl.innerHTML = '';
+      IAQ_HACKS.forEach((hack) => {
+        const active = state.activeIaqHacks.has(hack.id);
+        const row = document.createElement('div');
+        row.className = `flex items-start justify-between gap-4 rounded-xl border p-4 transition-all ${active ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-white'}`;
+        row.innerHTML = `
+          <div class="flex-1">
+            <div class="flex flex-wrap items-center gap-2">
+              <h4 class="text-sm font-bold text-slate-900">${hack.title}</h4>
+              <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800">${hack.badge}</span>
+            </div>
+            <p class="mt-1 text-xs text-slate-600">${hack.desc}</p>
+            <p class="mt-1 text-[11px] font-medium text-emerald-800">Impact: ${hack.impactNote}</p>
+          </div>
+          <div class="pt-1">
+            <input type="checkbox" id="toggle-${hack.id}" data-iaq-id="${hack.id}" ${active ? 'checked' : ''} class="toggle-checkbox sr-only" />
+            <label for="toggle-${hack.id}" class="toggle-label relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full bg-slate-300 transition-colors">
+              <span class="toggle-dot inline-block h-4 w-4 translate-x-1 transform rounded-full bg-white shadow transition-transform"></span>
+            </label>
+          </div>`;
+        iaqEl.appendChild(row);
+      });
+
+      // Community Alert Preview
+      renderCommunityAlert(stationName, meta);
+
+      // Update charts
+      updateCharts(m);
+    }
+
+    function renderCommunityAlert(stationName, meta) {
+      const type = document.getElementById('alert-type-select').value;
+      let msg = '';
+      if (type === 'leaf_burning') {
+        msg = `🌿 Clean Air Alert for ${stationName} (AQI ${state.aqi} - ${meta.label})\n\nWith winter inversion trapping PM₂.₅ near the ground, please ensure ZERO open burning of dry leaves or garden waste in our complex/lane.\n\n✅ Action: Drop dry leaves in the society compost bin instead. Keeping windows sealed 6–10 AM & running wet mops protects our kids and seniors!`;
+      } else if (type === 'school_carpool') {
+        msg = `🚇 Low-Emission Commute Drive (${stationName} · AQI ${state.aqi})\n\nPrivate cars emit 6.5× more carbon per person than Kolkata Metro & public transit. Let's cut morning traffic smog around our gate:\n\n✅ Reply below to join our 8:30 AM Metro-feeder carpool or walking bus for school & office runs!`;
+      } else {
+        msg = `😷 Winter Smog Health Advisory — ${stationName} (AQI ${state.aqi}, ${meta.label})\n\n• Avoid outdoor walks 6–10 AM (peak ground inversion)\n• Ventilate homes briefly 1–4 PM when smog disperses\n• Use well-fitted N95/FFP2 masks outdoors\n• Run kitchen exhaust & wet-mop instead of dry sweeping.`;
+      }
+      document.getElementById('community-alert-preview').textContent = msg;
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-msg').textContent = message;
+      toast.classList.remove('hidden');
+      toast.classList.add('flex');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('flex');
+      }, 2400);
+    }
+
+    // Event Listeners
+    document.querySelectorAll('.tab-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+        state.activeTab = target;
+        document.querySelectorAll('.tab-btn').forEach((b) => {
+          const active = b.dataset.tab === target;
+          b.className = `tab-btn whitespace-nowrap border-b-2 px-4 py-2.5 text-sm transition-colors ${active ? 'border-emerald-600 font-semibold text-emerald-700' : 'border-transparent font-medium text-slate-500 hover:text-slate-800'}`;
+        });
+        document.querySelectorAll('.tab-panel').forEach((panel) => {
+          panel.classList.toggle('hidden', panel.id !== `tab-${target}`);
+        });
+        if (iaqChart) iaqChart.resize();
+        if (impactChart) impactChart.resize();
+      });
+    });
+
+    document.getElementById('station-select').addEventListener('change', (e) => {
+      state.stationId = e.target.value;
+      if (state.stationId !== 'custom') {
+        state.aqi = STATIONS[state.stationId].aqi;
+      }
+      saveState();
+      renderAll();
+    });
+
+    document.getElementById('aqi-slider').addEventListener('input', (e) => {
+      state.aqi = Number(e.target.value);
+      state.stationId = 'custom';
+      document.getElementById('station-select').value = 'custom';
+      saveState();
+      renderAll();
+    });
+
+    document.getElementById('household-select').addEventListener('change', (e) => {
+      state.household = e.target.value;
+      saveState();
+      renderAll();
+    });
+
+    document.getElementById('commute-select').addEventListener('change', (e) => {
+      state.commute = e.target.value;
+      saveState();
+      renderAll();
+    });
+
+    document.getElementById('cooking-select').addEventListener('change', (e) => {
+      state.cooking = e.target.value;
+      saveState();
+      renderAll();
+    });
+
+    document.getElementById('commute-km-input').addEventListener('input', (e) => {
+      const v = Math.max(1, Math.min(100, Number(e.target.value) || 1));
+      state.commuteKm = v;
+      saveState();
+      renderAll();
+    });
+
+    document.getElementById('routine-list').addEventListener('change', (e) => {
+      const id = e.target.dataset.routineId;
+      if (!id) return;
+      if (e.target.checked) state.checkedRoutines.add(id);
+      else state.checkedRoutines.delete(id);
+      renderAll();
+    });
+
+    document.getElementById('iaq-hacks-list').addEventListener('change', (e) => {
+      const id = e.target.dataset.iaqId;
+      if (!id) return;
+      if (e.target.checked) state.activeIaqHacks.add(id);
+      else state.activeIaqHacks.delete(id);
+      renderAll();
+    });
+
+    document.getElementById('enable-all-iaq').addEventListener('click', () => {
+      IAQ_HACKS.forEach((h) => state.activeIaqHacks.add(h.id));
+      renderAll();
+      showToast('Recommended IAQ bundle activated');
+    });
+
+    document.getElementById('alert-type-select').addEventListener('change', () => {
+      const meta = getAqiMeta(state.aqi);
+      const stationName = state.stationId === 'custom' ? 'Custom Scenario' : STATIONS[state.stationId].name;
+      renderCommunityAlert(stationName, meta);
+    });
+
+    document.getElementById('copy-alert-btn').addEventListener('click', () => {
+      const text = document.getElementById('community-alert-preview').textContent;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => showToast('Community alert copied!')).catch(() => fallbackCopy(text));
+      } else {
+        fallbackCopy(text);
+      }
+    });
+
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToast('Community alert copied!');
+      } catch (e) {
+        showToast('Select text to copy');
+      }
+      document.body.removeChild(ta);
+    }
+
+    document.querySelectorAll('.prompt-chip').forEach((chip) => {
+      chip.addEventListener('click', async () => {
+        const prompt = chip.dataset.prompt;
+        appendChatMessage('user', prompt);
+        const reply = await askBackendOrLocal(prompt);
+        appendChatMessage('assistant', reply);
+      });
+    });
+
+    async function askBackendOrLocal(promptText) {
+      if (window.location.protocol.startsWith('http')) {
+        try {
+          const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompt: promptText,
+              station_id: state.stationId,
+              aqi: state.aqi,
+              household: state.household,
+              commute: state.commute,
+              cooking: state.cooking,
+              commute_km: state.commuteKm,
+              active_iaq_hacks: Array.from(state.activeIaqHacks)
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            return {
+              title: data.title,
+              answer: data.answer,
+              impact: data.impact,
+              actionTab: 'iaq',
+              actionLabel: 'Explore IAQ Lab'
+            };
+          }
+        } catch (err) {}
+      }
+      return generateAiResponse(promptText);
+    }
+
+    document.getElementById('chat-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const val = input.value.trim();
+      if (!val) return;
+      input.value = '';
+      appendChatMessage('user', val);
+      const reply = await askBackendOrLocal(val);
+      appendChatMessage('assistant', reply);
+    });
+
+    document.getElementById('chat-messages').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-jump-tab]');
+      if (!btn) return;
+      const tab = btn.dataset.jumpTab;
+      const targetBtn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+      if (targetBtn) targetBtn.click();
+    });
+
+    document.getElementById('clear-chat-btn').addEventListener('click', () => {
+      document.getElementById('chat-messages').innerHTML = '';
+      appendChatMessage('assistant', generateAiResponse('Plan my safe routine'));
+    });
+
+    // Initialize controls from state
+    document.getElementById('station-select').value = state.stationId;
+    document.getElementById('household-select').value = state.household;
+    document.getElementById('commute-select').value = state.commute;
+    document.getElementById('cooking-select').value = state.cooking;
+    document.getElementById('commute-km-input').value = state.commuteKm;
+
+    renderAll();
+    appendChatMessage('assistant', generateAiResponse('Plan my safe routine'));
+  </script>
+</body>
+</html>
