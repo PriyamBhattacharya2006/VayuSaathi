@@ -83,7 +83,7 @@
     .dark .tab-btn { color: #94a3b8; }
     .dark .tab-btn:hover { color: #f8fafc; }
     .dark #toast { background-color: #0f172a; border-color: #334155; }
-    .dark #hotline-modal > div { background-color: #0f172a !important; border-color: #334155; }
+    .dark #hotline-modal > div, .dark #alert-center-modal > div { background-color: #0f172a !important; border-color: #334155; }
 
     @media print {
       header, nav, #global-profile-bar, #chat-form, .no-print { display: none !important; }
@@ -153,6 +153,14 @@
           <span class="sm:hidden">My AQI</span>
         </button>
 
+        <!-- Smog Danger Alert Center Button -->
+        <button id="alert-bell-btn" title="Smog Danger Alerts & Settings" class="relative flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 transition-colors">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+          <span id="alert-bell-badge" class="hidden absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-600 text-[10px] font-black text-white shadow-sm animate-pulse">!</span>
+        </button>
+
         <!-- Quick Emergency Hotline Dropdown Trigger / Button -->
         <button id="hotline-btn" title="Pollution Helplines" class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -211,6 +219,31 @@
     </div>
   </header>
 
+  <!-- Top Emergency Danger Alert Banner (Dynamically shown when AQI >= dangerThreshold) -->
+  <aside id="smog-danger-banner" class="hidden relative z-30 border-b border-rose-300 bg-gradient-to-r from-rose-600 via-red-600 to-rose-700 text-white px-4 py-2.5 shadow-md">
+    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 text-xs">
+      <div class="flex items-center gap-2.5">
+        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-white text-rose-700 font-black animate-pulse text-xs">🚨</span>
+        <div>
+          <span class="font-extrabold tracking-wide uppercase" id="banner-alert-title">HAZARDOUS SMOG ALERT: AQI BREACHED DANGER LIMIT</span>
+          <span class="hidden md:inline text-rose-100 font-medium"> — <span id="banner-alert-text">Health emergency threshold reached. Immediate indoor isolation and N95 masks mandatory.</span></span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="banner-open-modal-btn" class="rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-sm px-2.5 py-1 font-bold text-white transition-colors border border-white/30">
+          Emergency Protocol
+        </button>
+        <button id="banner-whatsapp-btn" class="rounded-xl bg-emerald-500 hover:bg-emerald-600 px-2.5 py-1 font-bold text-white transition-colors shadow-xs flex items-center gap-1">
+          <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+          <span>Warn Family</span>
+        </button>
+        <button id="banner-dismiss-btn" title="Dismiss Alert for Session" class="rounded-lg p-1 text-white/80 hover:bg-white/20 hover:text-white">
+          ✕
+        </button>
+      </div>
+    </div>
+  </aside>
+
   <!-- Emergency Hotlines Modal -->
   <div id="hotline-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
     <div class="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-slate-100">
@@ -239,6 +272,94 @@
         </div>
       </div>
       <button id="ok-hotline-btn" class="mt-5 w-full rounded-2xl bg-slate-900 py-2.5 text-xs font-bold text-white hover:bg-slate-800">Close</button>
+    </div>
+  </div>
+
+  <!-- Smog Danger Alert Center & Protocol Modal -->
+  <div id="alert-center-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto chat-scroll">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-100 text-rose-700 text-base font-black">🚨</span>
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Smog Danger Alert System</h3>
+            <p class="text-xs text-slate-500">Automated warning thresholds, audio sirens, & push notifications</p>
+          </div>
+        </div>
+        <button id="close-alert-modal-btn" class="rounded-xl p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 text-lg">&times;</button>
+      </div>
+
+      <!-- Current Alert Condition Status Card -->
+      <div id="modal-alert-status-card" class="mt-4 rounded-2xl border p-4 text-xs transition-all">
+        <!-- Dynamically rendered -->
+      </div>
+
+      <!-- Alert Trigger Configuration Settings -->
+      <div class="mt-5 space-y-4 text-xs">
+        <div class="font-bold uppercase tracking-wider text-slate-500">Alert Threshold & Channels</div>
+
+        <!-- Danger Threshold Selector -->
+        <div>
+          <label for="alert-threshold-select" class="block font-bold text-slate-700 mb-1">Trigger Emergency Alert When AQI Reaches:</label>
+          <select id="alert-threshold-select" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-semibold text-slate-800">
+            <option value="200">AQI 200+ (Moderate / Poor Boundary)</option>
+            <option value="250">AQI 250+ (High Poor - Sensitive Groups Vulnerable)</option>
+            <option value="300" selected>AQI 300+ (Very Poor - Standard Danger Limit)</option>
+            <option value="400">AQI 400+ (Severe / Hazardous Emergency Limit)</option>
+          </select>
+          <p class="mt-1 text-[11px] text-slate-500">Current active AQI: <strong id="modal-current-aqi">270</strong></p>
+        </div>
+
+        <!-- Notification Channels -->
+        <div class="space-y-2.5">
+          <!-- Push Notification Toggle -->
+          <div class="flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-slate-50">
+            <div>
+              <div class="font-bold text-slate-900 flex items-center gap-1.5">
+                <span>🔔 Browser Push Notifications</span>
+                <span id="push-perm-status" class="text-[10px] rounded px-1.5 py-0.5 bg-slate-200 text-slate-600 font-bold">Checking...</span>
+              </div>
+              <div class="text-[11px] text-slate-500">Sends system notifications when local AQI breaches danger limits</div>
+            </div>
+            <button id="toggle-push-btn" class="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition-colors">
+              Enable Push
+            </button>
+          </div>
+
+          <!-- Sound Alarm Toggle -->
+          <div class="flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-slate-50">
+            <div>
+              <div class="font-bold text-slate-900">🔊 Synthesized Warning Chime</div>
+              <div class="text-[11px] text-slate-500">Plays an acoustic 2-tone alarm chime when entering danger zone</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="test-sound-btn" class="rounded-lg border border-slate-300 px-2 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-200">
+                Test Chime
+              </button>
+              <input type="checkbox" id="toggle-sound-chime" checked class="toggle-checkbox sr-only" />
+              <label for="toggle-sound-chime" class="toggle-label relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full bg-slate-300 transition-colors">
+                <span class="toggle-dot inline-block h-4 w-4 translate-x-1 transform rounded-full bg-white shadow transition-transform"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Emergency WhatsApp Broadcast Button -->
+        <div class="p-4 rounded-2xl border border-rose-200 bg-rose-50/60">
+          <div class="font-bold text-rose-950 flex items-center gap-1.5 text-xs">
+            <span>📢</span> Instant Family / Society Warning Blast
+          </div>
+          <p class="mt-1 text-[11px] text-rose-800 leading-relaxed">
+            One-click broadcast a formatted emergency warning advisory with clinical protection instructions directly to WhatsApp.
+          </p>
+          <button id="modal-broadcast-whatsapp-btn" class="mt-2.5 w-full flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 py-2 font-bold text-white hover:bg-rose-700 transition-colors shadow-xs">
+            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+            <span>Broadcast WhatsApp Danger Alert</span>
+          </button>
+        </div>
+      </div>
+
+      <button id="ok-alert-modal-btn" class="mt-5 w-full rounded-2xl bg-slate-900 py-2.5 text-xs font-bold text-white hover:bg-slate-800 transition-colors">Done</button>
     </div>
   </div>
 
@@ -1192,6 +1313,11 @@
       cleanerType: 'cr_box',
       simulatedHour: new Date().getHours(),
       activeTab: 'assistant',
+      dangerThreshold: 300,
+      soundAlertsEnabled: true,
+      pushAlertsEnabled: false,
+      alertBannerDismissedForAqi: null,
+      lastTriggeredAlertAqi: null,
       checkedRoutines: new Set(['r_window', 'r_mop']),
       activeIaqHacks: new Set(['seal_inversion', 'wet_mop', 'cr_box']),
       communityIncidents: [
@@ -1211,6 +1337,9 @@
         if (p.commute) state.commute = p.commute;
         if (p.cooking) state.cooking = p.cooking;
         if (typeof p.commuteKm === 'number') state.commuteKm = p.commuteKm;
+        if (typeof p.dangerThreshold === 'number') state.dangerThreshold = p.dangerThreshold;
+        if (typeof p.soundAlertsEnabled === 'boolean') state.soundAlertsEnabled = p.soundAlertsEnabled;
+        if (typeof p.pushAlertsEnabled === 'boolean') state.pushAlertsEnabled = p.pushAlertsEnabled;
         if (Array.isArray(p.checkedRoutines)) state.checkedRoutines = new Set(p.checkedRoutines);
         if (Array.isArray(p.activeIaqHacks)) state.activeIaqHacks = new Set(p.activeIaqHacks);
         if (Array.isArray(p.communityIncidents)) state.communityIncidents = p.communityIncidents;
@@ -1226,6 +1355,9 @@
           commute: state.commute,
           cooking: state.cooking,
           commuteKm: state.commuteKm,
+          dangerThreshold: state.dangerThreshold,
+          soundAlertsEnabled: state.soundAlertsEnabled,
+          pushAlertsEnabled: state.pushAlertsEnabled,
           checkedRoutines: Array.from(state.checkedRoutines),
           activeIaqHacks: Array.from(state.activeIaqHacks),
           communityIncidents: state.communityIncidents
@@ -1534,10 +1666,126 @@
       }
     }
 
+    function playSmogAlertTone() {
+      if (!state.soundAlertsEnabled) return;
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'triangle';
+
+        const now = ctx.currentTime;
+        osc.frequency.setValueAtTime(587.33, now); // D5
+        osc.frequency.setValueAtTime(880, now + 0.15); // A5
+        osc.frequency.setValueAtTime(587.33, now + 0.3); // D5
+        osc.frequency.setValueAtTime(880, now + 0.45); // A5
+
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+
+        osc.start(now);
+        osc.stop(now + 0.65);
+      } catch (e) {}
+    }
+
+    function triggerPushNotification(aqi, stationName, meta) {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      try {
+        new Notification(`🚨 Severe Smog Warning: AQI ${aqi}`, {
+          body: `DANGER LIMIT REACHED at ${stationName} (${meta.label})! Ground inversion is severe. Suspend outdoor walks and keep windows sealed.`,
+          icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23dc2626"><circle cx="12" cy="12" r="10"/></svg>'
+        });
+      } catch (e) {}
+    }
+
+    function generateEmergencyWhatsAppText() {
+      const station = STATIONS[state.stationId] || { name: 'Our Area' };
+      const meta = getAqiMeta(state.aqi);
+      const m = computeMetrics();
+      return `🚨 *CRITICAL SMOG DANGER ALERT: AQI ${state.aqi} (${meta.label.toUpperCase()})* 🚨\n📍 Location: *${station.name}*\n⚠️ Ambient PM₂.₅ is ~*${m.outdoorPm} µg/m³* (*${(m.outdoorPm / 15).toFixed(1)}× WHO limit*)!\n\n🔴 *Immediate Protective Protocols:*\n• DO NOT step outside for morning walks, jogs, or terrace yoga.\n• Keep all doors and windows strictly SEALED against heavy ground-level inversion smog.\n• Turn on DIY Corsi-Rosenthal boxes or HEPA purifiers on HIGH speed.\n• High-risk groups (children, seniors, asthma patients) must keep warm rescue inhalers ready.\n• If stepping out is unavoidable, wear a tightly fitted N95/FFP2 mask!\n\nStay safe! Track live winter smog guidance on VayuSaathi: https://priyambhattacharya2006.github.io/VayuSaathi/`;
+    }
+
+    function renderAlertModalStatus(isDanger, stationName, meta, m) {
+      const card = document.getElementById('modal-alert-status-card');
+      const curAqiEl = document.getElementById('modal-current-aqi');
+      if (curAqiEl) curAqiEl.textContent = `${state.aqi} (${meta.label}) at ${stationName}`;
+
+      if (!card) return;
+      if (isDanger) {
+        card.className = 'mt-4 rounded-2xl border border-rose-300 bg-rose-50/90 p-4 text-xs text-rose-950 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-200';
+        card.innerHTML = `
+          <div class="flex items-center justify-between font-extrabold uppercase tracking-wide text-rose-700 dark:text-rose-400">
+            <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-rose-600 animate-ping"></span> ACTIVE EMERGENCY CONDITION</span>
+            <span>AQI ${state.aqi} / Limit ${state.dangerThreshold}</span>
+          </div>
+          <div class="mt-2 text-sm font-bold text-slate-900 dark:text-white">${stationName} is in ${meta.label} Danger Zone (~${m.outdoorPm} µg/m³ PM₂.₅)</div>
+          <p class="mt-1 leading-relaxed text-slate-700 dark:text-slate-300">
+            Severe health impact on sensitive groups; healthy individuals may experience acute airway irritation. Immediate suspension of outdoor exertion and tight window sealing is required under standard CPCB protocol.
+          </p>
+          <div class="mt-3 flex flex-wrap gap-2 pt-2 border-t border-rose-200 dark:border-rose-800/60 font-semibold text-[11px]">
+            <span class="rounded-lg bg-rose-200/80 dark:bg-rose-900/60 px-2.5 py-0.5 text-rose-900 dark:text-rose-200">⚠️ No Outdoor Exercise</span>
+            <span class="rounded-lg bg-rose-200/80 dark:bg-rose-900/60 px-2.5 py-0.5 text-rose-900 dark:text-rose-200">😷 N95 Mask Mandatory</span>
+            <span class="rounded-lg bg-rose-200/80 dark:bg-rose-900/60 px-2.5 py-0.5 text-rose-900 dark:text-rose-200">🏠 Air Cleaner on High</span>
+          </div>
+        `;
+      } else {
+        card.className = 'mt-4 rounded-2xl border border-emerald-300 bg-emerald-50/80 p-4 text-xs text-emerald-950 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-200';
+        card.innerHTML = `
+          <div class="flex items-center justify-between font-extrabold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+            <span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-emerald-500"></span> BELOW DANGER THRESHOLD</span>
+            <span>AQI ${state.aqi} &lt; ${state.dangerThreshold}</span>
+          </div>
+          <div class="mt-2 text-sm font-bold text-slate-900 dark:text-white">${stationName} is currently ${meta.label}</div>
+          <p class="mt-1 leading-relaxed text-slate-700 dark:text-slate-300">
+            Local air quality is currently beneath your configured danger limit (${state.dangerThreshold}). Automatic visual sirens and push notifications will trigger if smog levels breach this threshold.
+          </p>
+        `;
+      }
+    }
+
     function renderAll() {
       const meta = getAqiMeta(state.aqi);
       const m = computeMetrics();
       const station = STATIONS[state.stationId] || { name: 'Custom', city: 'Custom' };
+
+      // Check Danger Limits
+      const isDanger = state.aqi >= state.dangerThreshold;
+      const banner = document.getElementById('smog-danger-banner');
+      const bellBadge = document.getElementById('alert-bell-badge');
+
+      if (isDanger) {
+        if (bellBadge) bellBadge.classList.remove('hidden');
+
+        if (banner) {
+          if (state.alertBannerDismissedForAqi !== state.aqi) {
+            banner.classList.remove('hidden');
+          } else {
+            banner.classList.add('hidden');
+          }
+        }
+
+        const bannerTitle = document.getElementById('banner-alert-title');
+        const bannerText = document.getElementById('banner-alert-text');
+        if (bannerTitle) bannerTitle.textContent = `🚨 ${meta.label.toUpperCase()} SMOG ALERT: AQI ${state.aqi} BREACHED DANGER LIMIT`;
+        if (bannerText) bannerText.textContent = `At ${station.name}, PM₂.₅ is ~${m.outdoorPm} µg/m³ (${(m.outdoorPm / 15).toFixed(1)}× WHO safe limit). Suspend outdoor walks & seal windows.`;
+
+        // If newly entering danger zone, play chime & push notification
+        if (state.lastTriggeredAlertAqi === null || state.lastTriggeredAlertAqi < state.dangerThreshold) {
+          playSmogAlertTone();
+          triggerPushNotification(state.aqi, station.name, meta);
+        }
+        state.lastTriggeredAlertAqi = state.aqi;
+      } else {
+        if (bellBadge) bellBadge.classList.add('hidden');
+        if (banner) banner.classList.add('hidden');
+        state.lastTriggeredAlertAqi = state.aqi;
+      }
+
+      renderAlertModalStatus(isDanger, station.name, meta, m);
 
       // Ambient glow
       const glow = document.getElementById('ambient-glow');
@@ -2237,6 +2485,146 @@
       const targetBtn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
       if (targetBtn) targetBtn.click();
     });
+
+    // Smog Danger Alert Center & Notifications Wire-up
+    function updatePushUI() {
+      const btn = document.getElementById('toggle-push-btn');
+      const statusEl = document.getElementById('push-perm-status');
+      if (!btn || !statusEl) return;
+      if (!('Notification' in window)) {
+        statusEl.textContent = 'Not Supported';
+        btn.disabled = true;
+        btn.textContent = 'Unavailable';
+        return;
+      }
+      if (Notification.permission === 'granted') {
+        statusEl.textContent = 'Active (Allowed)';
+        statusEl.className = 'text-[10px] rounded px-1.5 py-0.5 bg-emerald-100 text-emerald-800 font-bold';
+        btn.textContent = 'Enabled';
+        btn.className = 'rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white';
+      } else if (Notification.permission === 'denied') {
+        statusEl.textContent = 'Blocked in Browser';
+        statusEl.className = 'text-[10px] rounded px-1.5 py-0.5 bg-rose-100 text-rose-800 font-bold';
+        btn.textContent = 'Blocked';
+        btn.disabled = true;
+      } else {
+        statusEl.textContent = 'Not Configured';
+        statusEl.className = 'text-[10px] rounded px-1.5 py-0.5 bg-slate-200 text-slate-700 font-bold';
+        btn.textContent = 'Enable Push';
+        btn.className = 'rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition-colors';
+      }
+    }
+
+    const alertBellBtn = document.getElementById('alert-bell-btn');
+    if (alertBellBtn) {
+      alertBellBtn.addEventListener('click', () => {
+        document.getElementById('alert-center-modal').classList.remove('hidden');
+        document.getElementById('alert-center-modal').classList.add('flex');
+        updatePushUI();
+      });
+    }
+
+    const bannerOpenModalBtn = document.getElementById('banner-open-modal-btn');
+    if (bannerOpenModalBtn) {
+      bannerOpenModalBtn.addEventListener('click', () => {
+        document.getElementById('alert-center-modal').classList.remove('hidden');
+        document.getElementById('alert-center-modal').classList.add('flex');
+        updatePushUI();
+      });
+    }
+
+    const closeAlertModalBtn = document.getElementById('close-alert-modal-btn');
+    if (closeAlertModalBtn) {
+      closeAlertModalBtn.addEventListener('click', () => {
+        document.getElementById('alert-center-modal').classList.add('hidden');
+        document.getElementById('alert-center-modal').classList.remove('flex');
+      });
+    }
+
+    const okAlertModalBtn = document.getElementById('ok-alert-modal-btn');
+    if (okAlertModalBtn) {
+      okAlertModalBtn.addEventListener('click', () => {
+        document.getElementById('alert-center-modal').classList.add('hidden');
+        document.getElementById('alert-center-modal').classList.remove('flex');
+      });
+    }
+
+    const bannerDismissBtn = document.getElementById('banner-dismiss-btn');
+    if (bannerDismissBtn) {
+      bannerDismissBtn.addEventListener('click', () => {
+        state.alertBannerDismissedForAqi = state.aqi;
+        document.getElementById('smog-danger-banner').classList.add('hidden');
+        showToast('Banner dismissed for current AQI level');
+      });
+    }
+
+    const alertThresholdSelect = document.getElementById('alert-threshold-select');
+    if (alertThresholdSelect) {
+      alertThresholdSelect.value = String(state.dangerThreshold);
+      alertThresholdSelect.addEventListener('change', (e) => {
+        state.dangerThreshold = Number(e.target.value);
+        saveState();
+        renderAll();
+        showToast(`Danger alert trigger set to AQI ${state.dangerThreshold}+`);
+      });
+    }
+
+    const toggleSoundChime = document.getElementById('toggle-sound-chime');
+    if (toggleSoundChime) {
+      toggleSoundChime.checked = state.soundAlertsEnabled;
+      toggleSoundChime.addEventListener('change', (e) => {
+        state.soundAlertsEnabled = e.target.checked;
+        saveState();
+        showToast(state.soundAlertsEnabled ? 'Audio alert chime enabled' : 'Audio alert chime muted');
+      });
+    }
+
+    const testSoundBtn = document.getElementById('test-sound-btn');
+    if (testSoundBtn) {
+      testSoundBtn.addEventListener('click', () => {
+        playSmogAlertTone();
+        showToast('Testing 2-tone emergency warning chime');
+      });
+    }
+
+    const togglePushBtn = document.getElementById('toggle-push-btn');
+    if (togglePushBtn) {
+      togglePushBtn.addEventListener('click', () => {
+        if (!('Notification' in window)) {
+          showToast('Desktop push notifications not supported in this browser.');
+          return;
+        }
+        Notification.requestPermission().then((permission) => {
+          updatePushUI();
+          if (permission === 'granted') {
+            showToast('✅ Push notifications enabled for high AQI warnings!');
+            new Notification('🚨 VayuSaathi Smog Alert System', {
+              body: 'Push notifications are active. You will be alerted when local AQI breaches danger limits.',
+              icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23dc2626"><circle cx="12" cy="12" r="10"/></svg>'
+            });
+          } else {
+            showToast('Notification permission was not granted.');
+          }
+        });
+      });
+    }
+
+    // WhatsApp Broadcast Buttons
+    function triggerEmergencyWhatsAppBroadcast() {
+      const msg = generateEmergencyWhatsAppText();
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+      window.open(url, '_blank');
+    }
+
+    const bannerWhatsappBtn = document.getElementById('banner-whatsapp-btn');
+    if (bannerWhatsappBtn) {
+      bannerWhatsappBtn.addEventListener('click', triggerEmergencyWhatsAppBroadcast);
+    }
+
+    const modalBroadcastWhatsappBtn = document.getElementById('modal-broadcast-whatsapp-btn');
+    if (modalBroadcastWhatsappBtn) {
+      modalBroadcastWhatsappBtn.addEventListener('click', triggerEmergencyWhatsAppBroadcast);
+    }
 
     // Emergency Helpline Modal
     document.getElementById('hotline-btn').addEventListener('click', () => {
