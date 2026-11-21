@@ -20,7 +20,7 @@ STATIC_DIR = BASE_DIR / "static"
 app = FastAPI(
     title="VayuSaathi API",
     description="GenAI-powered winter smog & urban air quality assistant backend",
-    version="1.0.0",
+    version="1.1.0",
 )
 
 app.add_middleware(
@@ -31,16 +31,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Grounded WBPCB Kolkata Station Readings (Nov 17, 2026)
+# Grounded WBPCB & CPCB Winter Monitoring Station Readings
 STATIONS = {
-    "kolkata": {"name": "Kolkata Overall", "aqi": 270},
-    "chakraberia": {"name": "Chakraberia", "aqi": 282},
-    "bhowanipore": {"name": "Bhowanipore", "aqi": 276},
-    "ballygunge": {"name": "Ballygunge", "aqi": 272},
-    "bidhannagar": {"name": "Bidhannagar / Salt Lake", "aqi": 264},
-    "jadavpur": {"name": "Jadavpur University", "aqi": 218},
-    "fort_william": {"name": "Fort William", "aqi": 177},
-    "rabindra_sarobar": {"name": "Rabindra Sarobar", "aqi": 125},
+    # Kolkata Stations
+    "kolkata": {"name": "Kolkata Overall", "city": "Kolkata", "aqi": 270, "primary": "PM2.5"},
+    "chakraberia": {"name": "Chakraberia", "city": "Kolkata", "aqi": 282, "primary": "PM2.5"},
+    "bhowanipore": {"name": "Bhowanipore", "city": "Kolkata", "aqi": 276, "primary": "PM2.5"},
+    "ballygunge": {"name": "Ballygunge", "city": "Kolkata", "aqi": 272, "primary": "PM2.5"},
+    "bidhannagar": {"name": "Bidhannagar / Salt Lake", "city": "Kolkata", "aqi": 264, "primary": "PM2.5"},
+    "jadavpur": {"name": "Jadavpur University", "city": "Kolkata", "aqi": 218, "primary": "PM2.5"},
+    "fort_william": {"name": "Fort William", "city": "Kolkata", "aqi": 177, "primary": "PM2.5"},
+    "rabindra_sarobar": {"name": "Rabindra Sarobar", "city": "Kolkata", "aqi": 125, "primary": "PM2.5"},
+    # Delhi NCR Stations
+    "delhi_anand_vihar": {"name": "Anand Vihar, Delhi", "city": "Delhi NCR", "aqi": 412, "primary": "PM2.5"},
+    "delhi_rk_puram": {"name": "RK Puram, Delhi", "city": "Delhi NCR", "aqi": 348, "primary": "PM2.5"},
+    "delhi_punjabi_bagh": {"name": "Punjabi Bagh, Delhi", "city": "Delhi NCR", "aqi": 376, "primary": "PM2.5"},
+    "noida_sec62": {"name": "Sector 62, Noida", "city": "Delhi NCR", "aqi": 365, "primary": "PM2.5"},
+    "gurugram_sec51": {"name": "Sector 51, Gurugram", "city": "Delhi NCR", "aqi": 320, "primary": "PM2.5"},
+    # Other Major Smog-Prone Cities
+    "patna_samastipur": {"name": "DRM Office, Patna", "city": "Patna", "aqi": 335, "primary": "PM2.5"},
+    "lucknow_talkatora": {"name": "Talkatora, Lucknow", "city": "Lucknow", "aqi": 298, "primary": "PM2.5"},
+    "mumbai_bkc": {"name": "Bandra Kurla Complex (BKC)", "city": "Mumbai", "aqi": 215, "primary": "PM2.5"},
+    "mumbai_chembur": {"name": "Chembur, Mumbai", "city": "Mumbai", "aqi": 230, "primary": "PM2.5"},
+    "custom": {"name": "Custom Location", "city": "Custom", "aqi": 270, "primary": "PM2.5"},
 }
 
 
@@ -282,6 +295,8 @@ if STATIC_DIR.exists():
 @app.get("/")
 def serve_index():
     index_path = STATIC_DIR / "index.html"
+    if not index_path.exists():
+        index_path = BASE_DIR / "index.html"
     if not index_path.exists():
         raise HTTPException(status_code=404, detail="Frontend index.html not found")
     return FileResponse(str(index_path))
