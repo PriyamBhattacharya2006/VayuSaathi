@@ -14,3 +14,4 @@ Open `http://127.0.0.1:8000` in your browser.
 - **Build Command:** `pip install -r requirements.txt`
 - **Start Command:** `uvicorn app:app --host 0.0.0.0 --port $PORT`
 - **Environment Variable (optional):** `GEMINI_API_KEY`
+ https://priyambhattacharya2006.github.io/VayuSaathi/
