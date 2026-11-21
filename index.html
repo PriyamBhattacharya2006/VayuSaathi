@@ -114,7 +114,7 @@
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <span class="text-xl font-extrabold tracking-tight text-slate-900">VayuSaathi</span>
+            <span data-i18n="header-title" class="text-xl font-extrabold tracking-tight text-slate-900">VayuSaathi</span>
             <span class="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800 flex items-center gap-1">
               <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
               v2.0 GenAI Smog Shield
@@ -166,6 +166,12 @@
           <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
           </svg>
+        </button>
+
+        <!-- Hindi / English Language Toggle Button -->
+        <button id="lang-toggle-btn" title="Switch Language / भाषा बदलें" class="flex h-9 items-center gap-1 rounded-xl border border-slate-200 px-2.5 text-xs font-extrabold text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+          <span id="lang-icon">🌐</span>
+          <span id="lang-label">हिं</span>
         </button>
 
         <!-- Dark / Light Theme Toggle Button -->
@@ -1300,6 +1306,265 @@
         impactNote: 'Avoids massive indoor volatile spikes.'
       }
     ];
+
+    // ─── Language / i18n ────────────────────────────────────────────────
+    let currentLang = localStorage.getItem('vayusaathi_lang') || 'en';
+
+    const TRANSLATIONS = {
+      en: {
+        // Header
+        'header-title': 'VayuSaathi',
+        'header-subtitle': 'Winter Smog & Urban Air Quality Assistant',
+        'loc-btn-full': 'My Location AQI',
+        'loc-btn-short': 'My AQI',
+        'export-btn': 'Export Card',
+        'lang-label': 'हिं',
+        // Tabs
+        'tab-assistant': 'AI Assistant & Routine',
+        'tab-forecast': '24h Inversion Forecast',
+        'tab-iaq': 'IAQ Room Simulator',
+        'tab-commute': 'Lung Dose & Masks',
+        'tab-community': 'Community & WhatsApp',
+        'tab-health': 'Health Protocols & Myths',
+        // Profile bar
+        'profile-heading': 'Your Location & Lifestyle Context',
+        'profile-subtext': 'Real-time calculations adapt to your monitoring station, family sensitivity, commute, and kitchen.',
+        'loc-bar-btn': 'My Current Location AQI',
+        'station-label': 'Monitoring Station',
+        'outdoor-aqi-label': 'Outdoor AQI Level',
+        'household-label': 'Household Vulnerability',
+        'commute-label': 'Daily Commute',
+        'cooking-label': 'Primary Cooking Fuel',
+        // KPI section
+        'kpi-outdoor-pm-label': 'Outdoor PM₂.₅',
+        'kpi-indoor-pm-label': 'Modeled Indoor PM₂.₅',
+        'kpi-exposure-label': 'Exposure Reduction',
+        'kpi-co2-label': 'CO₂ Avoidable (kg)',
+        // Chat
+        'chat-placeholder': 'Ask about masks, air purifiers, smog health risks...',
+        'chat-send': 'Send',
+        // Alert banner
+        'banner-open-modal': 'Emergency Protocol',
+        'banner-warn': 'Warn Family',
+        // Alert modal
+        'alert-modal-title': 'Smog Danger Alert System',
+        'alert-modal-subtitle': 'Automated warning thresholds, audio sirens, & push notifications',
+        'alert-threshold-label': 'Trigger Emergency Alert When AQI Reaches:',
+        'push-notif-title': '🔔 Browser Push Notifications',
+        'push-notif-desc': 'Sends system notifications when local AQI breaches danger limits',
+        'enable-push': 'Enable Push',
+        'sound-title': '🔊 Synthesized Warning Chime',
+        'sound-desc': 'Plays an acoustic 2-tone alarm chime when entering danger zone',
+        'test-chime': 'Test Chime',
+        'broadcast-title': '📢 Instant Family / Society Warning Blast',
+        'broadcast-desc': 'One-click broadcast a formatted emergency warning advisory with clinical protection instructions directly to WhatsApp.',
+        'broadcast-btn': 'Broadcast WhatsApp Danger Alert',
+        'modal-done': 'Done',
+        // Hotline modal
+        'hotline-modal-title': 'Pollution & Emergency Helplines',
+        'hotline-close': 'Close',
+        // Footer
+        'footer-sources': 'Data Sources & References',
+        // Inversion status
+        'inv-safe': 'Safe Dispersion Window Active',
+        'inv-morning': 'Morning Inversion Active',
+        'inv-night': 'Night Inversion Active',
+        // Toast messages
+        'toast-lang-switch': 'Switched to English',
+        'toast-dark': '🌙 Switched to Dark Theme',
+        'toast-light': '☀️ Switched to Light Theme',
+        // Section headings
+        'section-routine': 'Today\'s Smog Action Checklist',
+        'section-iaq-hacks': 'Indoor Air Quality Optimization Hacks',
+        'section-community': 'Community Incident Feed',
+        'section-lung': 'Lung Dose & Mask Efficacy Calculator',
+        // Misc buttons
+        'activate-bundle': 'Activate Recommended Bundle',
+        'copy-whatsapp': 'Copy WhatsApp Message',
+        'report-incident': 'Report New Incident',
+      },
+      hi: {
+        // Header
+        'header-title': 'वायुसाथी',
+        'header-subtitle': 'शीतकालीन धुंध और शहरी वायु गुणवत्ता सहायक',
+        'loc-btn-full': 'मेरे स्थान की AQI',
+        'loc-btn-short': 'मेरी AQI',
+        'export-btn': 'कार्ड निर्यात करें',
+        'lang-label': 'EN',
+        // Tabs
+        'tab-assistant': 'AI सहायक और दिनचर्या',
+        'tab-forecast': '24 घंटे का पूर्वानुमान',
+        'tab-iaq': 'IAQ कमरा सिमुलेटर',
+        'tab-commute': 'फेफड़े की खुराक और मास्क',
+        'tab-community': 'समुदाय और WhatsApp',
+        'tab-health': 'स्वास्थ्य प्रोटोकॉल और मिथक',
+        // Profile bar
+        'profile-heading': 'आपका स्थान और जीवनशैली',
+        'profile-subtext': 'रियल-टाइम गणनाएं आपके मॉनिटरिंग स्टेशन, परिवार की संवेदनशीलता और रसोई के अनुसार अनुकूलित होती हैं।',
+        'loc-bar-btn': 'मेरे वर्तमान स्थान की AQI',
+        'station-label': 'मॉनिटरिंग स्टेशन',
+        'outdoor-aqi-label': 'बाहरी AQI स्तर',
+        'household-label': 'घरेलू संवेदनशीलता',
+        'commute-label': 'दैनिक आवागमन',
+        'cooking-label': 'मुख्य खाना पकाने का ईंधन',
+        // KPI section
+        'kpi-outdoor-pm-label': 'बाहरी PM₂.₅',
+        'kpi-indoor-pm-label': 'अनुमानित घरेलू PM₂.₅',
+        'kpi-exposure-label': 'एक्सपोज़र में कमी',
+        'kpi-co2-label': 'बचाने योग्य CO₂ (किग्रा)',
+        // Chat
+        'chat-placeholder': 'मास्क, एयर प्यूरीफायर, धुंध स्वास्थ्य जोखिम के बारे में पूछें...',
+        'chat-send': 'भेजें',
+        // Alert banner
+        'banner-open-modal': 'आपातकालीन प्रोटोकॉल',
+        'banner-warn': 'परिवार को चेतावनी दें',
+        // Alert modal
+        'alert-modal-title': 'धुंध खतरा अलर्ट सिस्टम',
+        'alert-modal-subtitle': 'स्वचालित चेतावनी सीमाएं, ऑडियो साइरन और पुश नोटिफिकेशन',
+        'alert-threshold-label': 'AQI इस स्तर पर पहुंचने पर आपातकालीन अलर्ट भेजें:',
+        'push-notif-title': '🔔 ब्राउज़र पुश नोटिफिकेशन',
+        'push-notif-desc': 'स्थानीय AQI खतरे की सीमा पार करने पर सिस्टम नोटिफिकेशन भेजता है',
+        'enable-push': 'पुश सक्षम करें',
+        'sound-title': '🔊 चेतावनी ध्वनि संश्लेषण',
+        'sound-desc': 'खतरे के क्षेत्र में प्रवेश करने पर 2-टोन अलार्म बजता है',
+        'test-chime': 'ध्वनि परीक्षण',
+        'broadcast-title': '📢 परिवार / सोसायटी को त्वरित चेतावनी',
+        'broadcast-desc': 'WhatsApp पर एक क्लिक में फॉर्मेटेड आपातकालीन चेतावनी भेजें।',
+        'broadcast-btn': 'WhatsApp खतरा अलर्ट प्रसारण',
+        'modal-done': 'हो गया',
+        // Hotline modal
+        'hotline-modal-title': 'प्रदूषण और आपातकालीन हेल्पलाइन',
+        'hotline-close': 'बंद करें',
+        // Footer
+        'footer-sources': 'डेटा स्रोत और संदर्भ',
+        // Inversion status
+        'inv-safe': 'सुरक्षित फैलाव खिड़की सक्रिय',
+        'inv-morning': 'सुबह का व्युत्क्रमण सक्रिय',
+        'inv-night': 'रात का व्युत्क्रमण सक्रिय',
+        // Toast messages
+        'toast-lang-switch': 'हिंदी भाषा चुनी गई ✓',
+        'toast-dark': '🌙 डार्क थीम में बदल गया',
+        'toast-light': '☀️ लाइट थीम में बदल गया',
+        // Section headings
+        'section-routine': 'आज की धुंध सुरक्षा चेकलिस्ट',
+        'section-iaq-hacks': 'इनडोर वायु गुणवत्ता सुधार टिप्स',
+        'section-community': 'सामुदायिक घटना फ़ीड',
+        'section-lung': 'फेफड़े की खुराक और मास्क प्रभावशीलता',
+        // Misc buttons
+        'activate-bundle': 'अनुशंसित बंडल सक्रिय करें',
+        'copy-whatsapp': 'WhatsApp संदेश कॉपी करें',
+        'report-incident': 'नई घटना रिपोर्ट करें',
+      }
+    };
+
+    function applyTranslations(lang) {
+      const t = TRANSLATIONS[lang] || TRANSLATIONS['en'];
+      // Helper
+      const setText = (id, key) => { const el = document.getElementById(id); if (el) el.textContent = t[key] || ''; };
+      const setPlaceholder = (id, key) => { const el = document.getElementById(id); if (el) el.placeholder = t[key] || ''; };
+
+      // Header branding
+      const headerTitle = document.querySelector('[data-i18n="header-title"]');
+      if (headerTitle) headerTitle.textContent = t['header-title'];
+      const headerSubtitle = document.querySelector('[data-i18n="header-subtitle"]');
+      if (headerSubtitle) headerSubtitle.textContent = t['header-subtitle'];
+
+      // Lang toggle label
+      setText('lang-label', 'lang-label');
+
+      // Location buttons
+      const locFull = document.querySelector('#detect-loc-header-btn .hidden.sm\\:inline');
+      if (locFull) locFull.textContent = t['loc-btn-full'];
+      const locShort = document.querySelector('#detect-loc-header-btn .sm\\:hidden');
+      if (locShort) locShort.textContent = t['loc-btn-short'];
+      const locBarBtn = document.querySelector('#detect-loc-bar-btn span');
+      if (locBarBtn) locBarBtn.textContent = t['loc-bar-btn'];
+
+      // Export card
+      const exportSpan = document.querySelector('#print-plan-btn .hidden.sm\\:inline');
+      if (exportSpan) exportSpan.textContent = t['export-btn'];
+
+      // Nav tabs
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        const tab = btn.getAttribute('data-tab');
+        const keyMap = {
+          assistant: 'tab-assistant',
+          forecast: 'tab-forecast',
+          iaq: 'tab-iaq',
+          commute: 'tab-commute',
+          community: 'tab-community',
+          health: 'tab-health'
+        };
+        const span = btn.querySelector('span');
+        if (span && keyMap[tab]) span.textContent = t[keyMap[tab]];
+      });
+
+      // Profile bar
+      const profileH2 = document.querySelector('#global-profile-bar h2');
+      if (profileH2) profileH2.textContent = t['profile-heading'];
+      const profileP = document.querySelector('#global-profile-bar > div > div > div p');
+      if (profileP) profileP.textContent = t['profile-subtext'];
+
+      // Labels for select inputs
+      const stationLabel = document.querySelector('label[for="station-select"]');
+      if (stationLabel) stationLabel.textContent = t['station-label'];
+      const aqiLabel = document.querySelector('label[for="aqi-slider"]');
+      if (aqiLabel) aqiLabel.textContent = t['outdoor-aqi-label'];
+      const householdLabel = document.querySelector('label[for="household-select"]');
+      if (householdLabel) householdLabel.textContent = t['household-label'];
+      const commuteLabel = document.querySelector('label[for="commute-select"]');
+      if (commuteLabel) commuteLabel.textContent = t['commute-label'];
+      const cookingLabel = document.querySelector('label[for="cooking-select"]');
+      if (cookingLabel) cookingLabel.textContent = t['cooking-label'];
+
+      // Chat placeholder & send button
+      setPlaceholder('chat-input', 'chat-placeholder');
+      const chatSendBtn = document.querySelector('#chat-form button[type="submit"] span, #chat-form button[type="submit"]');
+      if (chatSendBtn) {
+        const sendSpan = document.querySelector('#chat-form button[type="submit"] span');
+        if (sendSpan) sendSpan.textContent = t['chat-send'];
+      }
+
+      // Alert modal strings
+      const alertModalTitle = document.querySelector('#alert-center-modal h3');
+      if (alertModalTitle) alertModalTitle.textContent = t['alert-modal-title'];
+      const alertModalSub = document.querySelector('#alert-center-modal h3 + p, #alert-center-modal p.text-xs.text-slate-500');
+      if (alertModalSub) alertModalSub.textContent = t['alert-modal-subtitle'];
+      const thresholdLabel = document.querySelector('label[for="alert-threshold-select"]');
+      if (thresholdLabel) thresholdLabel.textContent = t['alert-threshold-label'];
+      setText('ok-alert-modal-btn', 'modal-done');
+
+      // Push notif
+      const pushTitle = document.querySelector('#toggle-push-btn')?.closest('.flex.items-center.justify-between')?.querySelector('.font-bold .\\:gap-1\\.5, .font-bold.text-slate-900');
+      const enablePushBtn = document.getElementById('toggle-push-btn');
+      if (enablePushBtn && enablePushBtn.textContent.trim().includes('Enable')) enablePushBtn.textContent = t['enable-push'];
+      const testChimeBtn = document.getElementById('test-sound-btn');
+      if (testChimeBtn) testChimeBtn.textContent = t['test-chime'];
+
+      // Broadcast button
+      const broadcastBtn = document.getElementById('modal-broadcast-whatsapp-btn');
+      if (broadcastBtn) {
+        const bSpan = broadcastBtn.querySelector('span');
+        if (bSpan) bSpan.textContent = t['broadcast-btn'];
+      }
+
+      // Banner buttons
+      const bannerOpenModal = document.getElementById('banner-open-modal-btn');
+      if (bannerOpenModal) bannerOpenModal.textContent = t['banner-open-modal'];
+      const bannerWarn = document.getElementById('banner-whatsapp-btn');
+      if (bannerWarn) {
+        const wSpan = bannerWarn.querySelector('span');
+        if (wSpan) wSpan.textContent = t['banner-warn'];
+      }
+
+      // Hotline modal
+      const hotlineTitle = document.querySelector('#hotline-modal h3');
+      if (hotlineTitle) hotlineTitle.textContent = t['hotline-modal-title'];
+      setText('ok-hotline-btn', 'hotline-close');
+
+      // Update html lang attribute
+      document.documentElement.setAttribute('lang', lang === 'hi' ? 'hi' : 'en');
+    }
 
     // Global App State
     const state = {
@@ -2664,12 +2929,24 @@
       if (impactChart) { impactChart.destroy(); impactChart = null; }
       if (diurnalChart) { diurnalChart.destroy(); diurnalChart = null; }
       renderCharts(computeMetrics());
-      showToast(isDark ? '🌙 Switched to Dark Theme' : '☀️ Switched to Light Theme');
+      showToast(isDark ? (TRANSLATIONS[currentLang]?.['toast-dark'] || '🌙 Switched to Dark Theme') : (TRANSLATIONS[currentLang]?.['toast-light'] || '☀️ Switched to Light Theme'));
     }
 
     const themeToggleBtn = document.getElementById('theme-toggle-btn');
     if (themeToggleBtn) {
       themeToggleBtn.addEventListener('click', toggleTheme);
+    }
+
+    // Language Toggle Button
+    const langToggleBtn = document.getElementById('lang-toggle-btn');
+    if (langToggleBtn) {
+      langToggleBtn.addEventListener('click', () => {
+        currentLang = currentLang === 'en' ? 'hi' : 'en';
+        localStorage.setItem('vayusaathi_lang', currentLang);
+        applyTranslations(currentLang);
+        renderAll();
+        showToast(currentLang === 'hi' ? TRANSLATIONS.hi['toast-lang-switch'] : TRANSLATIONS.en['toast-lang-switch']);
+      });
     }
 
     // Print Action Card
@@ -2684,6 +2961,7 @@
     document.getElementById('commute-select').value = state.commute;
     document.getElementById('cooking-select').value = state.cooking;
     document.getElementById('commute-km-input').value = state.commuteKm;
+    applyTranslations(currentLang);
 
     renderAll();
     appendChatMessage('assistant', generateAiResponse('Plan my safe routine'));
